@@ -1,0 +1,58 @@
+﻿并发和同步
+(1) 中断和异常：中断发生后，中断处理程序和被中断的进程之间有可能产生并发访问。 
+
+(2) 软中断和tasklet：软件中断或者tasklet随时可能会被调度执行，从而打断当前
+正在执行的进程上下文。
+
+(3) 内核抢占：调度器支持可抢占特性，会导致进程和进程之间的并发访问
+
+(4) 多处理器并发执行：多处理上可以同时运行多个进程
+
+  概念
+  
+  临界区 是指访问和操作共享数据的代码段，这些资源无法同时被多个执行线程访问。访问临界区的执行
+  或者代码路径为并发源。 为了避免临界区的中并发访问，开发者必须保证访问临界区的原子性，也就是
+  说临界区不能有多个并发源同时执行。整个临界区就像一个不可分割的整体。 
+  
+  
+  在支持SMP对称多处理器的Linux内核里，并发运行不同CPU中内核线程完全有可能同一时刻并发访问共享数据
+并发访问随时都可能发生。 特别是现在的linux内核早已经支持内核抢占。调度器可能抢占正在运行的进程。
+重新调度其他进程来执行。 
+
+3.3 负载均衡
+3.3.1 CPU域初始化
+
+CPU分类：
+
+超线程(SMT) :CONFIG_SCHED_SMT   一个物理核心可以有两个执行线程，被称为超线程技术。超线程使用相同
+CPU资源且共享L1 cache,迁移进程 不会影响cache利用率。
+
+多核 MC   CONFIG_SCHED_MC  每个物理核心 独享L1 cache ,多个物理核心可以组成一个cluster,cluster里的CPU共享L2 cache
+
+处理器 (Soc) 内核称为DIE， Soc 级别
+
+
+Kernel/cpu.c 
+cpu_possible_mask  : 表示系统中有多少个可以行（现在运行或者将来某个时间运行）的CPU核心 
+cpu_online_mask  ：表示系统中有多少个正在处于运行状态 online 的CPU核心
+cpu_present_mask ：表示系统中有多少个具备onlinet条件的CPU核心，它们不定处于online 状态，有的cpu 核心可能被热插拔。
+cpu_active_mask  ：表示系统中有多少个活跃的CPU核心。
+
+如何构建 CPU拓扑关系，在系统启动时即开可构建CPU拓扑关系：
+[start_kernel() ->reset_init()->kernel_init()->kernel_init_freeable()->sched_init_smp() ->init_sched_domains()]
+
+
+[start_kernel()->setup_arch()->arm_dt_init_cpu_maps()
+
+在系统启动时，arm_dt_init_cpu_maps()函数通过查询DTS来获取CPU核心的数量，然后通过set_cpu_possible()函数设置到
+cpu_possible_bits 位图中，从而设置cpu_possible_mask变量
+
+
+[start_kernel()->reset_init()->kernel_init()->kernel_init_freeable()->smp_prepare_cpus()
+
+3.3.2 负载均衡
+  SMP 负载均衡机制从注册软中断开始，每次系统处理调度tick时会检查当前是否需要处理SMP负载均衡
+  
+  start_kernel() ->sched_init()->init_sched_fair_class()
+  
+  rebalance_domains()函数是负载均衡的核心入口。

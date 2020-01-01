@@ -1,0 +1,83 @@
+﻿1. 在系统启动时，ARM linux 内核如何知道系统中有多大的内存空间？
+2. 在32bit linux 内核中，用户空间和内核空间的比例通常是3:1； 可以修改成2:2吗?
+3. 物理内存页面如何添加到伙伴系统中，是一页一页添加，还是以2的几次幂加入呢?
+4. 内核的一级页表存放在什么地方 ，内核空间的二级页表又存在什么地方 
+5. 用户进程的一级页表存放在什么地方？二级页表又存放在什么地方 
+6. 在ARM32系统中，页表如何映射的，在ARM64系统中，页表又是如何映射的
+7. 请简述linux内核在理想情况下页面分配器(page allocator)是如何分配出连续
+页面的；
+8. 在页面分配器中，如何从分配掩码(gfp_mask)中确定可以从哪些zone中分配内存?
+9. 页面分配器是按照什么方向来扫描zone的
+10.为用户进程分配物理内存，分配应该选用GFP_kernel,还是GFP_HIGHUsermovable呢
+11.slab分配器是如何分配和释放小内存块的
+12.slab 分配器中一个着色的概念(cache color)，着色有什么作用？
+13.slab 分配器中的slab 对象有没有根据per-cpu做一些优化
+14.slab 增长并导致大量不用空闲对象，该如何解决
+15.请问kmalloc,vmalloc和malloc之间有什么区别以及实现上的差异
+16.使用用户态的API函数malloc分配内存时，会马上为其分配物理内存吗？
+17.假设不考虑libc因素，malloc分配的100byte,那么实际上内存是为其
+分配100Byte吗
+18.假设两个用户进程打印的malloc分配的虚拟地址是一样的。那么在内核中这两
+块虚拟内存是否打架呢
+19. vm_normal_page()函数返回的是什么样页面的stuct page数据结构？
+为什么内存管理代码中需要这个函数
+20. 请简述get_user_page函数的作用和实现流程
+21. 请简述follow_page()函数的作用和实现流程
+22. 请简述私有映射和共享映射的区别。
+23. 为什么第二次调用mmap时，linux内核没有捕捉到地址重叠并返回失败呢
+24. struct page 数据结构中_count和_mapcount有什么区别
+25. 匿名页面和page cache 页面有什么区别
+26. struct page 数据结构有一个锁，请问trylock_page()和lock_page有什么区别
+27. 在linux 2.4.x 内核中，如何从一个page找到映射该页面的vma,反射映射
+可以带来哪些使得
+28. 阅读linux4.0 内核ramp机制的代码，画出父子进程之间vma,avc,anon_vma
+和page等数据结构之间的关系图
+29. 在linux 2.6.43 中，RMAP机制采用的新的实现，在linux 2.6.33 和之前的版本中
+称为旧版本的rmap机制，那么在旧版本rmap机制中，如果父进程有1000个子进程，每个
+子进程都有一个vma,这个vma里面有1000个匿名页面，当所有的子进程的vma同时发生
+写复制时会是什么情况呢
+30. 当page 加入lru链接中，被其他线程释放了这个page,那么lru链接如何知道这个
+page已经被释放了
+31. kswapd内核线程何时被会唤醒
+32 LRU链接如何知道page的活动频繁程度
+33. kswapd 按照什么原则来换出页面
+34. kswapd 按照什么方向来扫描zone
+35. kswapd 以什么标准来退出扫描LRU
+36. 手持设备例如Android 系统，没有swap分区或者swap文件，kswap会扫描匿名页面
+LRU吗
+37. swappiness的含义是什么？kswapd如何计算匿名页面和page cache 之间
+的扫描比重？
+38. 当系统充斥大量只访问一次的文件访问(user one streaming IO)时，kswapd 如何规避
+这种风暴。
+39. 在回收page cache时，对于dirty 的page cache,kswapd会马上回写的吗
+40. 内核有那些页面会被kswapd写回交换分区 
+41. ARM32 linux如何模拟这个linux版本的L_TYPE_YOUNG比特位呢
+42，如何理解refault Distance算法 
+43. 请简述匿名页面的生命周期，在什么情况下会产生匿名页面，在什么条件下会释放匿名页面
+44. KSM是基于什么原理来合并页面的
+45. 在ksm机制里，合并过程中把page设置成写write_protect_page()有这样一个判断 
+46. 如果多个vma的虚拟页面同时映射了同一个匿名页面，那么此时page->index应该等于
+多少？
+47. 为什么Dirty cow小程序可以修改一个只读文件的内容。
+48. 在dirty cow内存漏洞中，如何dirty cow 程序没有madvise thread 线程，即有
+procselfmem thread线程，能否修改foo文件内容
+49. 假设在内核空间获取了某个文件对应page cache 页面struct page 数据结构，
+而对应vma属性是只读，那么内核空间是否可以成功修改该文件呢
+50. 如果用户进程使用只读属性(PROT_READ)来mmap映射一个文件到用户空间，然后memcpy
+来写这段内存空间，会是什么样的情况 
+51. 请画出内存管理中常用的数据结构的关系图：如mm_struct,vma,vaddr,page,pfn,
+pte,zone,paddr和pg_data等，并思考如下转换关系。
+  (1) 如何由mm数据结构和虚拟地址adddr找到对应vma  
+  (2) 如何由page和vma找到虚拟地址addr
+  (3) 如何由page 找到所的映射的vma
+  (4) 如何由vma和虚拟地址addr 找出相应的page数据结构
+  (5) page 和pfn之间互换
+  (6) pfn 和paddr之间互换
+  (7) page 和pte之间互换 
+  (8) zone 和page 之间互换
+  (9) zone 和pg_data之间互换
+52 请画出在最 糟糕的情况下分配若干个连续物理页面的流程图
+53 在Android 中新加了LMK(low memory killer )请描述LMK 和OOM killer 之间的关系
+54 请描述一致性DMA映射dma_alloc_coherent()函数在ARM中是如何管理cache一致性
+55.请描述流式DMA 映射 dma_map_single()函数在ARM中是如何管理cache一致性的
+56. 为什么在linux 4.8 内核中要把基于zone的LRU链表机制迁移到基于node 呢？
